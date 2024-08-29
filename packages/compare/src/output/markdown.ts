@@ -1,8 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as md from 'ts-markdown-builder';
-// @ts-ignore
-import markdownTable from 'markdown-table';
 import * as logger from '@callstack/reassure-logger';
 import {
   formatCount,
@@ -13,9 +11,8 @@ import {
   formatDurationChange,
 } from '../utils/format';
 import type { AddedEntry, CompareEntry, CompareResult, RemovedEntry, MeasureEntry, RenderIssues } from '../types';
-import { disclosure } from '../utils/markdown';
 
-const tableHeader = ['Name', 'Type', 'Duration', 'Count'] as const;
+const tableHeader = ['Name', 'Type', 'Duration', 'Count'];
 
 export const writeToMarkdown = async (filePath: string, data: CompareResult) => {
   try {
@@ -44,7 +41,7 @@ async function writeToFile(filePath: string, content: string) {
 function buildMarkdown(data: CompareResult) {
   let doc = [
     md.heading('Performance Comparison Report', 1),
-    md.unorderedList([
+    md.list([
       `${md.bold('Current')}: ${formatMetadata(data.metadata.current)}`,
       `${md.bold('Baseline')}: ${formatMetadata(data.metadata.baseline)}`,
     ]),
@@ -92,15 +89,15 @@ function buildMarkdown(data: CompareResult) {
     buildDetailsTable(data.removed),
   ];
 
-  return doc.join('\n\n');
+  return md.joinBlocks(doc);
 }
 
 function buildSummaryTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>, collapse: boolean = false) {
   if (!entries.length) return md.italic('There are no entries');
 
   const rows = entries.map((entry) => [entry.name, entry.type, formatEntryDuration(entry), formatEntryCount(entry)]);
-  const table = markdownTable([tableHeader, ...rows]) as string;
-  return collapse ? disclosure('Show entries', table) : table;
+  const table = md.table(tableHeader, rows);
+  return collapse ? md.disclosure('Show entries', table) : table;
 }
 
 function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>) {
@@ -113,7 +110,7 @@ function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
     buildCountDetailsEntry(entry),
   ]);
 
-  return disclosure('Show details', markdownTable([tableHeader, ...rows]));
+  return md.disclosure('Show details', md.table(tableHeader, rows));
 }
 
 function formatEntryDuration(entry: CompareEntry | AddedEntry | RemovedEntry) {
@@ -160,7 +157,7 @@ function buildDurationDetails(title: string, entry: MeasureEntry) {
     entry.warmupDurations ? `Warmup runs: ${formatRunDurations(entry.warmupDurations)}` : '',
   ]
     .filter(Boolean)
-    .join(`<br/>`);
+    .join(md.lineBreak);
 }
 
 function buildCountDetails(title: string, entry: MeasureEntry) {
@@ -174,7 +171,7 @@ function buildCountDetails(title: string, entry: MeasureEntry) {
     buildRenderIssuesList(entry.issues),
   ]
     .filter(Boolean)
-    .join(`<br/>`);
+    .join(md.lineBreak);
 }
 
 function formatRunDurations(values: number[]) {
@@ -184,14 +181,14 @@ function formatRunDurations(values: number[]) {
 function buildRenderIssuesTable(entries: Array<CompareEntry | AddedEntry>) {
   if (!entries.length) return md.italic('There are no entries');
 
-  const tableHeader = ['Name', 'Initial Updates', 'Redundant Updates'] as const;
+  const tableHeader = ['Name', 'Initial Updates', 'Redundant Updates'];
   const rows = entries.map((entry) => [
     entry.name,
     formatInitialUpdates(entry.current.issues?.initialUpdateCount),
     formatRedundantUpdates(entry.current.issues?.redundantUpdates),
   ]);
 
-  return markdownTable([tableHeader, ...rows]);
+  return md.table(tableHeader, rows);
 }
 
 function buildRenderIssuesList(issues: RenderIssues | undefined) {

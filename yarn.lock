@@ -1766,10 +1766,9 @@ __metadata:
     babel-jest: "npm:^29.7.0"
     del-cli: "npm:^5.1.0"
     jest: "npm:^29.7.0"
-    markdown-table: "npm:^2.0.0"
     prettier: "npm:^2.8.8"
     react-native-builder-bob: "npm:^0.24.0"
-    ts-markdown-builder: "npm:^0.1.0"
+    ts-markdown-builder: "npm:^0.2.1"
     ts-regex-builder: "npm:^1.7.1"
     typescript: "npm:^5.5.4"
     zod: "npm:^3.23.8"
@@ -8803,15 +8802,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-table@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "markdown-table@npm:2.0.0"
-  dependencies:
-    repeat-string: "npm:^1.0.0"
-  checksum: 10c0/f257e0781ea50eb946919df84bdee4ba61f983971b277a369ca7276f89740fd0e2749b9b187163a42df4c48682b71962d4007215ce3523480028f06c11ddc2e6
-  languageName: node
-  linkType: hard
-
 "marky@npm:^1.2.2":
   version: 1.2.5
   resolution: "marky@npm:1.2.5"
@@ -10672,13 +10662,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"repeat-string@npm:^1.0.0":
-  version: 1.6.1
-  resolution: "repeat-string@npm:1.6.1"
-  checksum: 10c0/87fa21bfdb2fbdedc44b9a5b118b7c1239bdd2c2c1e42742ef9119b7d412a5137a1d23f1a83dc6bb686f4f27429ac6f542e3d923090b44181bafa41e8ac0174d
-  languageName: node
-  linkType: hard
-
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -11773,10 +11756,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-markdown-builder@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "ts-markdown-builder@npm:0.1.0"
-  checksum: 10c0/d00952ca004bf41270a987237dab73edcac5dc6761bc404cc0a2809674eff3aab325a03d4794bc3db2d227626f2cc4a7b91da896a21e2a11e8df8003389e04c7
+"ts-markdown-builder@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "ts-markdown-builder@npm:0.2.1"
+  checksum: 10c0/d87efbf5fb04ae4a893ebf87957f891a80840124ad61b47e24080af7b38eed2165c2f8ab102e562b534f3915756059ad7a9844934b6318d33aafaee14523e64b
   languageName: node
   linkType: hard
 
