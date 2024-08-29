@@ -1769,6 +1769,7 @@ __metadata:
     markdown-table: "npm:^2.0.0"
     prettier: "npm:^2.8.8"
     react-native-builder-bob: "npm:^0.24.0"
+    ts-markdown-builder: "npm:^0.1.0"
     ts-regex-builder: "npm:^1.7.1"
     typescript: "npm:^5.5.4"
     zod: "npm:^3.23.8"
@@ -11769,6 +11770,13 @@ __metadata:
   peerDependencies:
     typescript: ">=4.2.0"
   checksum: 10c0/f54a0ba9ed56ce66baea90a3fa087a484002e807f28a8ccb2d070c75e76bde64bd0f6dce98b3802834156306050871b67eec325cb4e918015a360a3f0868c77c
+  languageName: node
+  linkType: hard
+
+"ts-markdown-builder@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "ts-markdown-builder@npm:0.1.0"
+  checksum: 10c0/d00952ca004bf41270a987237dab73edcac5dc6761bc404cc0a2809674eff3aab325a03d4794bc3db2d227626f2cc4a7b91da896a21e2a11e8df8003389e04c7
   languageName: node
   linkType: hard
 

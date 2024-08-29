@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as md from 'ts-markdown-builder';
 // @ts-ignore
 import markdownTable from 'markdown-table';
 import * as logger from '@callstack/reassure-logger';
@@ -11,16 +12,7 @@ import {
   formatCountChange,
   formatDurationChange,
 } from '../utils/format';
-import * as md from '../utils/markdown';
-import type {
-  AddedEntry,
-  CompareEntry,
-  CompareResult,
-  RemovedEntry,
-  MeasureEntry,
-  MeasureMetadata,
-  RenderIssues,
-} from '../types';
+import type { AddedEntry, CompareEntry, CompareResult, RemovedEntry, MeasureEntry, RenderIssues } from '../types';
 import { collapsibleSection } from '../utils/markdown';
 
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'] as const;
@@ -50,56 +42,55 @@ async function writeToFile(filePath: string, content: string) {
 }
 
 function buildMarkdown(data: CompareResult) {
-  let result = md.heading1('Performance Comparison Report');
-
-  result += `\n${buildMetadataMarkdown('Current', data.metadata.current)}`;
-  result += `\n${buildMetadataMarkdown('Baseline', data.metadata.baseline)}`;
+  let doc = [
+    md.heading('Performance Comparison Report', 1),
+    ` - ${md.bold('Current')}: ${formatMetadata(data.metadata.current)}`,
+    ` - ${md.bold('Baseline')}: ${formatMetadata(data.metadata.baseline)}`,
+  ];
 
   if (data.errors?.length) {
-    result += `\n\n${md.heading3('Errors')}\n`;
-    data.errors.forEach((message) => {
-      result += ` 1. 🛑 ${message}\n`;
-    });
+    doc = [...doc, md.heading('Errors', 2), ...data.errors.map((message) => `🛑 ${message}`)];
   }
 
   if (data.warnings?.length) {
-    result += `\n\n${md.heading3('Warnings')}\n`;
-    data.warnings.forEach((message) => {
-      result += ` 1. 🟡 ${message}\n`;
-    });
+    doc = [...doc, md.heading('Warnings', 2), ...data.warnings.map((message) => `🟡 ${message}`)];
   }
 
-  result += `\n\n${md.heading3('Significant Changes To Duration')}`;
-  result += `\n${buildSummaryTable(data.significant)}`;
-  result += `\n${buildDetailsTable(data.significant)}`;
-  result += `\n\n${md.heading3('Meaningless Changes To Duration')}`;
-  result += `\n${buildSummaryTable(data.meaningless, true)}`;
-  result += `\n${buildDetailsTable(data.meaningless)}`;
+  doc = [
+    ...doc,
+    md.heading('Significant Changes To Duration', 3),
+    buildSummaryTable(data.significant),
+    buildDetailsTable(data.significant),
+    md.heading('Meaningless Changes To Duration', 3),
+    buildSummaryTable(data.meaningless, true),
+    buildDetailsTable(data.meaningless),
+  ];
 
   // Skip renders counts if user only has function measurements
   const allEntries = [...data.significant, ...data.meaningless, ...data.added, ...data.removed];
   const hasRenderEntries = allEntries.some((e) => e.type === 'render');
   if (hasRenderEntries) {
-    result += `\n\n${md.heading3('Render Count Changes')}`;
-    result += `\n${buildSummaryTable(data.countChanged)}`;
-    result += `\n${buildDetailsTable(data.countChanged)}`;
-    result += `\n\n${md.heading3('Render Issues')}`;
-    result += `\n${buildRenderIssuesTable(data.renderIssues)}`;
+    doc = [
+      ...doc,
+      md.heading('Render Count Changes', 3),
+      buildSummaryTable(data.countChanged),
+      buildDetailsTable(data.countChanged),
+      md.heading('Render Issues', 3),
+      buildRenderIssuesTable(data.renderIssues),
+    ];
   }
 
-  result += `\n\n${md.heading3('Added Scenarios')}`;
-  result += `\n${buildSummaryTable(data.added)}`;
-  result += `\n${buildDetailsTable(data.added)}`;
-  result += `\n\n${md.heading3('Removed Scenarios')}`;
-  result += `\n${buildSummaryTable(data.removed)}`;
-  result += `\n${buildDetailsTable(data.removed)}`;
-  result += '\n';
+  doc = [
+    ...doc,
+    md.heading('Added Entries', 3),
+    buildSummaryTable(data.added),
+    buildDetailsTable(data.added),
+    md.heading('Removed Entries', 3),
+    buildSummaryTable(data.removed),
+    buildDetailsTable(data.removed),
+  ];
 
-  return result;
-}
-
-function buildMetadataMarkdown(name: string, metadata: MeasureMetadata | undefined) {
-  return ` - ${md.bold(name)}: ${formatMetadata(metadata)}`;
+  return doc.join('\n\n');
 }
 
 function buildSummaryTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>, collapse: boolean = false) {
