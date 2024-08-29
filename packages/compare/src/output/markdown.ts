@@ -13,7 +13,7 @@ import {
   formatDurationChange,
 } from '../utils/format';
 import type { AddedEntry, CompareEntry, CompareResult, RemovedEntry, MeasureEntry, RenderIssues } from '../types';
-import { collapsibleSection } from '../utils/markdown';
+import { disclosure } from '../utils/markdown';
 
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'] as const;
 
@@ -44,8 +44,10 @@ async function writeToFile(filePath: string, content: string) {
 function buildMarkdown(data: CompareResult) {
   let doc = [
     md.heading('Performance Comparison Report', 1),
-    ` - ${md.bold('Current')}: ${formatMetadata(data.metadata.current)}`,
-    ` - ${md.bold('Baseline')}: ${formatMetadata(data.metadata.baseline)}`,
+    md.unorderedList([
+      `${md.bold('Current')}: ${formatMetadata(data.metadata.current)}`,
+      `${md.bold('Baseline')}: ${formatMetadata(data.metadata.baseline)}`,
+    ]),
   ];
 
   if (data.errors?.length) {
@@ -97,9 +99,8 @@ function buildSummaryTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
   if (!entries.length) return md.italic('There are no entries');
 
   const rows = entries.map((entry) => [entry.name, entry.type, formatEntryDuration(entry), formatEntryCount(entry)]);
-  const content = markdownTable([tableHeader, ...rows]);
-
-  return collapse ? collapsibleSection('Show entries', content) : content;
+  const table = markdownTable([tableHeader, ...rows]) as string;
+  return collapse ? disclosure('Show entries', table) : table;
 }
 
 function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>) {
@@ -111,9 +112,8 @@ function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
     buildDurationDetailsEntry(entry),
     buildCountDetailsEntry(entry),
   ]);
-  const content = markdownTable([tableHeader, ...rows]);
 
-  return collapsibleSection('Show details', content);
+  return disclosure('Show details', markdownTable([tableHeader, ...rows]));
 }
 
 function formatEntryDuration(entry: CompareEntry | AddedEntry | RemovedEntry) {
