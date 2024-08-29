@@ -27,7 +27,7 @@ type DisclosureOptions = {
 };
 
 function disclosure(title: string, content: string, options: DisclosureOptions) {
-  return `<details>\n<summary${options.open ? ' open' : ''}>${title}</summary>\n${content}\n</details>`;
+  return `<details${options.open ? ' open' : ''}>\n<summary>${title}</summary>\n\n${content}\n</details>`;
 }
 
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'];
