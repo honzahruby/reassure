@@ -12,6 +12,24 @@ import {
 } from '../utils/format';
 import type { AddedEntry, CompareEntry, CompareResult, RemovedEntry, MeasureEntry, RenderIssues } from '../types';
 
+const lineBreak = '<br/>';
+
+function joinBlocks(blocks: string[]) {
+  return blocks.filter(Boolean).join('\n\n');
+}
+
+function joinLines(lines: string[]) {
+  return lines.filter(Boolean).join(lineBreak);
+}
+
+type DisclosureOptions = {
+  open?: boolean;
+};
+
+function disclosure(title: string, content: string, options: DisclosureOptions) {
+  return `<details>\n<summary${options.open ? ' open' : ''}>${title}</summary>\n${content}\n</details>`;
+}
+
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'];
 
 export const writeToMarkdown = async (filePath: string, data: CompareResult) => {
@@ -48,11 +66,11 @@ function buildMarkdown(data: CompareResult) {
   ];
 
   if (data.errors?.length) {
-    doc = [...doc, md.heading('Errors', 2), ...data.errors.map((message) => `🛑 ${message}`)];
+    doc = [...doc, md.heading('Errors', 2), md.list(data.errors)];
   }
 
   if (data.warnings?.length) {
-    doc = [...doc, md.heading('Warnings', 2), ...data.warnings.map((message) => `🟡 ${message}`)];
+    doc = [...doc, md.heading('Warnings', 2), md.list(data.warnings)];
   }
 
   doc = [
@@ -89,15 +107,14 @@ function buildMarkdown(data: CompareResult) {
     buildDetailsTable(data.removed),
   ];
 
-  return md.joinBlocks(doc);
+  return md.joinBlocks(doc.filter(Boolean));
 }
 
 function buildSummaryTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>, collapse: boolean = false) {
   if (!entries.length) return md.italic('There are no entries');
 
   const rows = entries.map((entry) => [entry.name, entry.type, formatEntryDuration(entry), formatEntryCount(entry)]);
-  const table = md.table(tableHeader, rows);
-  return collapse ? md.disclosure('Show entries', table) : table;
+  return disclosure('Show entries', md.table(tableHeader, rows), { open: !collapse });
 }
 
 function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>) {
@@ -129,49 +146,41 @@ function formatEntryCount(entry: CompareEntry | AddedEntry | RemovedEntry) {
 }
 
 function buildDurationDetailsEntry(entry: CompareEntry | AddedEntry | RemovedEntry) {
-  return [
+  return joinBlocks([
     entry.baseline != null ? buildDurationDetails('Baseline', entry.baseline) : '',
     'current' in entry ? buildDurationDetails('Current', entry.current) : '',
-  ]
-    .filter(Boolean)
-    .join('<br/><br/>');
+  ]);
 }
 
 function buildCountDetailsEntry(entry: CompareEntry | AddedEntry | RemovedEntry) {
-  return [
+  return md.joinBlocks([
     entry.baseline != null ? buildCountDetails('Baseline', entry.baseline) : '',
     'current' in entry ? buildCountDetails('Current', entry.current) : '',
-  ]
-    .filter(Boolean)
-    .join('<br/><br/>');
+  ]);
 }
 
 function buildDurationDetails(title: string, entry: MeasureEntry) {
   const relativeStdev = entry.stdevDuration / entry.meanDuration;
 
-  return [
+  return joinLines([
     md.bold(title),
     `Mean: ${formatDuration(entry.meanDuration)}`,
     `Stdev: ${formatDuration(entry.stdevDuration)} (${formatPercent(relativeStdev)})`,
     entry.durations ? `Runs: ${formatRunDurations(entry.durations)}` : '',
     entry.warmupDurations ? `Warmup runs: ${formatRunDurations(entry.warmupDurations)}` : '',
-  ]
-    .filter(Boolean)
-    .join(md.lineBreak);
+  ]);
 }
 
 function buildCountDetails(title: string, entry: MeasureEntry) {
   const relativeStdev = entry.stdevCount / entry.meanCount;
 
-  return [
+  return joinLines([
     md.bold(title),
     `Mean: ${formatCount(entry.meanCount)}`,
     `Stdev: ${formatCount(entry.stdevCount)} (${formatPercent(relativeStdev)})`,
     entry.counts ? `Runs: ${entry.counts.map(formatCount).join(' ')}` : '',
     buildRenderIssuesList(entry.issues),
-  ]
-    .filter(Boolean)
-    .join(md.lineBreak);
+  ]);
 }
 
 function formatRunDurations(values: number[]) {
@@ -202,7 +211,7 @@ function buildRenderIssuesList(issues: RenderIssues | undefined) {
     output.push(` - Redundant updates: ${formatRedundantUpdates(issues.redundantUpdates, false)}`);
   }
 
-  return output.join('<br/>');
+  return joinLines(output);
 }
 
 function formatInitialUpdates(count: number | undefined, showSymbol: boolean = true) {
