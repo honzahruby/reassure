@@ -26,8 +26,8 @@ type DisclosureOptions = {
   open?: boolean;
 };
 
-function disclosure(title: string, content: string, options: DisclosureOptions) {
-  return `<details${options.open ? ' open' : ''}>\n<summary>${title}</summary>\n\n${content}\n</details>`;
+function disclosure(title: string, content: string, options?: DisclosureOptions) {
+  return `<details${options?.open ? ' open' : ''}>\n<summary>${title}</summary>\n\n${content}\n</details>`;
 }
 
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'];
@@ -127,7 +127,7 @@ function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
     buildCountDetailsEntry(entry),
   ]);
 
-  return md.disclosure('Show details', md.table(tableHeader, rows));
+  return disclosure('Show details', md.table(tableHeader, rows));
 }
 
 function formatEntryDuration(entry: CompareEntry | AddedEntry | RemovedEntry) {
