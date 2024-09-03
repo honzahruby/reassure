@@ -187,13 +187,13 @@ function buildRenderIssuesList(issues: RenderIssues | undefined) {
 
   const output = ['Render issues:'];
   if (issues?.initialUpdateCount) {
-    output.push(` - Initial updates: ${formatInitialUpdates(issues.initialUpdateCount, false)}`);
+    output.push(`- Initial updates: ${formatInitialUpdates(issues.initialUpdateCount, false)}`);
   }
   if (issues?.redundantUpdates?.length) {
-    output.push(` - Redundant updates: ${formatRedundantUpdates(issues.redundantUpdates, false)}`);
+    output.push(`- Redundant updates: ${formatRedundantUpdates(issues.redundantUpdates, false)}`);
   }
 
-  return md.joinLines(output);
+  return output.join('\n');
 }
 
 function formatInitialUpdates(count: number | undefined, showSymbol: boolean = true) {
