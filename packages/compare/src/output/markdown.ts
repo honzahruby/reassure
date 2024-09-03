@@ -12,24 +12,6 @@ import {
 } from '../utils/format';
 import type { AddedEntry, CompareEntry, CompareResult, RemovedEntry, MeasureEntry, RenderIssues } from '../types';
 
-const lineBreak = '<br/>';
-
-function joinBlocks(blocks: string[]) {
-  return blocks.filter(Boolean).join('\n\n');
-}
-
-function joinLines(lines: string[]) {
-  return lines.filter(Boolean).join(lineBreak);
-}
-
-type DisclosureOptions = {
-  open?: boolean;
-};
-
-function disclosure(title: string, content: string, options?: DisclosureOptions) {
-  return `<details${options?.open ? ' open' : ''}>\n<summary>${title}</summary>\n\n${content}\n</details>`;
-}
-
 const tableHeader = ['Name', 'Type', 'Duration', 'Count'];
 
 export const writeToMarkdown = async (filePath: string, data: CompareResult) => {
@@ -114,7 +96,7 @@ function buildSummaryTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
   if (!entries.length) return md.italic('There are no entries');
 
   const rows = entries.map((entry) => [entry.name, entry.type, formatEntryDuration(entry), formatEntryCount(entry)]);
-  return disclosure('Show entries', md.table(tableHeader, rows), { open: !collapse });
+  return md.disclosure('Show entries', md.table(tableHeader, rows), { open: !collapse });
 }
 
 function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEntry>) {
@@ -127,7 +109,7 @@ function buildDetailsTable(entries: Array<CompareEntry | AddedEntry | RemovedEnt
     buildCountDetailsEntry(entry),
   ]);
 
-  return disclosure('Show details', md.table(tableHeader, rows));
+  return md.disclosure('Show details', md.table(tableHeader, rows));
 }
 
 function formatEntryDuration(entry: CompareEntry | AddedEntry | RemovedEntry) {
@@ -146,7 +128,7 @@ function formatEntryCount(entry: CompareEntry | AddedEntry | RemovedEntry) {
 }
 
 function buildDurationDetailsEntry(entry: CompareEntry | AddedEntry | RemovedEntry) {
-  return joinBlocks([
+  return md.joinBlocks([
     entry.baseline != null ? buildDurationDetails('Baseline', entry.baseline) : '',
     'current' in entry ? buildDurationDetails('Current', entry.current) : '',
   ]);
@@ -162,7 +144,7 @@ function buildCountDetailsEntry(entry: CompareEntry | AddedEntry | RemovedEntry)
 function buildDurationDetails(title: string, entry: MeasureEntry) {
   const relativeStdev = entry.stdevDuration / entry.meanDuration;
 
-  return joinLines([
+  return md.joinLines([
     md.bold(title),
     `Mean: ${formatDuration(entry.meanDuration)}`,
     `Stdev: ${formatDuration(entry.stdevDuration)} (${formatPercent(relativeStdev)})`,
@@ -174,7 +156,7 @@ function buildDurationDetails(title: string, entry: MeasureEntry) {
 function buildCountDetails(title: string, entry: MeasureEntry) {
   const relativeStdev = entry.stdevCount / entry.meanCount;
 
-  return joinLines([
+  return md.joinLines([
     md.bold(title),
     `Mean: ${formatCount(entry.meanCount)}`,
     `Stdev: ${formatCount(entry.stdevCount)} (${formatPercent(relativeStdev)})`,
@@ -211,7 +193,7 @@ function buildRenderIssuesList(issues: RenderIssues | undefined) {
     output.push(` - Redundant updates: ${formatRedundantUpdates(issues.redundantUpdates, false)}`);
   }
 
-  return joinLines(output);
+  return md.joinLines(output);
 }
 
 function formatInitialUpdates(count: number | undefined, showSymbol: boolean = true) {
